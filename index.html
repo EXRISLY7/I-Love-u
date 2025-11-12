@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Love Forever</title>
+  <title>Sürpriz Hazırlığı</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     /* --- Base page --- */
@@ -14,7 +14,89 @@
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     }
 
+    /* --- Başlangıç Ekranı --- */
+    #start-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #8b0000, #ff0000, #dc143c);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 1s ease;
+    }
+
+    #start-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .surprise-text {
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      text-align: center;
+      text-shadow: 0 0 10px rgba(0,0,0,0.5);
+      opacity: 0;
+      animation: fadeInText 2s ease 0.5s forwards;
+    }
+
+    #surprise-btn {
+      padding: 15px 40px;
+      font-size: 1.5rem;
+      background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      opacity: 0;
+      animation: fadeInButton 2s ease 2s forwards;
+      position: absolute;
+    }
+
+    #surprise-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(45deg, #ff5252, #ff7b7b);
+    }
+
+    /* --- Beyaz Ekran --- */
+    #white-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 900;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    #white-screen.show {
+      opacity: 1;
+    }
+
+    /* --- Kalp Patlaması Efekti --- */
+    .heart {
+      position: absolute;
+      font-size: 20px;
+      color: #ff0000;
+      pointer-events: none;
+      z-index: 950;
+    }
+
     /* --- Love words --- */
+    #ui {
+      display: none;
+    }
+
     #ui .love {
       position: absolute;
       top: 50%;
@@ -46,6 +128,16 @@
     }
 
     /* --- Animations --- */
+    @keyframes fadeInText {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInButton {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     @keyframes horizontal {
       from { transform: translateX(0px); }
       to   { transform: translateX(450px); }
@@ -76,36 +168,137 @@
   </style>
 </head>
 <body>
-  <!-- Müzik ekleme -->
-  <audio autoplay loop>
-    <source src="music.mp3" type="audio/mpeg">
-    Tarayıcınız audio etiketini desteklemiyor.
-  </audio>
+  <!-- Beyaz Ekran -->
+  <div id="white-screen"></div>
 
+  <!-- Başlangıç Ekranı -->
+  <div id="start-screen">
+    <div class="surprise-text">Sürprize Hazır mısın? 💝</div>
+    <button id="surprise-btn">Hazırım!</button>
+  </div>
+
+  <!-- Kalp Patlaması Alanı -->
+  <div id="heart-explosion"></div>
+
+  <!-- Ana Animasyon -->
   <div id="ui"></div>
 
   <script>
-    const N = 100;
+    let clickCount = 0;
+    const maxClicks = 6;
+    const surpriseBtn = document.getElementById('surprise-btn');
+    const startScreen = document.getElementById('start-screen');
+    const whiteScreen = document.getElementById('white-screen');
+    const heartExplosion = document.getElementById('heart-explosion');
     const ui = document.getElementById('ui');
-    for (let i = 1; i <= N; i++) {
-      const love = document.createElement('div');
-      love.className = 'love';
-      love.style.setProperty('--i', i);
 
-      const h = document.createElement('div');
-      h.className = 'love_horizontal';
+    // Butonun rastgele hareket etmesi
+    function moveButtonRandomly() {
+      if (clickCount < maxClicks) {
+        const x = Math.random() * (window.innerWidth - 200);
+        const y = Math.random() * (window.innerHeight - 100);
+        
+        surpriseBtn.style.transition = 'all 0.5s ease';
+        surpriseBtn.style.left = x + 'px';
+        surpriseBtn.style.top = y + 'px';
+        surpriseBtn.style.transform = `scale(${1 - (clickCount * 0.1)})`;
+      }
+    }
 
-      const v = document.createElement('div');
-      v.className = 'love_vertical';
+    // Buton otomatik kaçsın
+    function startButtonMovement() {
+      setInterval(() => {
+        if (clickCount < maxClicks) {
+          moveButtonRandomly();
+        }
+      }, 1000);
+    }
 
-      const word = document.createElement('div');
-      word.className = 'love_word';
-      word.textContent = 'I love you';
+    // Kalp patlaması efekti
+    function createHeartExplosion() {
+      // Beyaz ekranı göster
+      whiteScreen.classList.add('show');
+      
+      for (let i = 0; i < 150; i++) {
+        setTimeout(() => {
+          const heart = document.createElement('div');
+          heart.className = 'heart';
+          heart.innerHTML = '❤️';
+          heart.style.left = Math.random() * 100 + 'vw';
+          heart.style.top = Math.random() * 100 + 'vh';
+          heart.style.fontSize = (Math.random() * 30 + 20) + 'px';
+          heart.style.opacity = '0';
+          
+          heartExplosion.appendChild(heart);
+          
+          // Kalp animasyonu
+          const animation = heart.animate([
+            { opacity: 0, transform: 'scale(0) translateY(0) rotate(0deg)' },
+            { opacity: 1, transform: 'scale(1) translateY(-100px) rotate(180deg)' },
+            { opacity: 0, transform: 'scale(0.5) translateY(-200px) rotate(360deg)' }
+          ], {
+            duration: 2000,
+            easing: 'cubic-bezier(0.215, 0.610, 0.355, 1)'
+          });
+          
+          animation.onfinish = () => heart.remove();
+        }, i * 20);
+      }
+    }
 
-      v.appendChild(word);
-      h.appendChild(v);
-      love.appendChild(h);
-      ui.appendChild(love);
+    // Buton tıklama olayı
+    surpriseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      if (clickCount < maxClicks) {
+        clickCount++;
+        surpriseBtn.textContent = `Yakala beni! (${clickCount}/${maxClicks})`;
+        moveButtonRandomly();
+      } else {
+        // Son tıklama - kalp patlaması ve geçiş
+        createHeartExplosion();
+        
+        setTimeout(() => {
+          startScreen.classList.add('fade-out');
+          whiteScreen.classList.remove('show');
+          setTimeout(() => {
+            startScreen.style.display = 'none';
+            whiteScreen.style.display = 'none';
+            ui.style.display = 'block';
+            startMainAnimation();
+          }, 1000);
+        }, 2000);
+      }
+    });
+
+    // Buton hareketini başlat
+    setTimeout(() => {
+      startButtonMovement();
+    }, 3000);
+
+    // Ana animasyonu başlat
+    function startMainAnimation() {
+      const N = 100;
+      for (let i = 1; i <= N; i++) {
+        const love = document.createElement('div');
+        love.className = 'love';
+        love.style.setProperty('--i', i);
+
+        const h = document.createElement('div');
+        h.className = 'love_horizontal';
+
+        const v = document.createElement('div');
+        v.className = 'love_vertical';
+
+        const word = document.createElement('div');
+        word.className = 'love_word';
+        word.textContent = 'I love you'; // İngilizce yaptım
+
+        v.appendChild(word);
+        h.appendChild(v);
+        love.appendChild(h);
+        ui.appendChild(love);
+      }
     }
   </script>
 </body>
